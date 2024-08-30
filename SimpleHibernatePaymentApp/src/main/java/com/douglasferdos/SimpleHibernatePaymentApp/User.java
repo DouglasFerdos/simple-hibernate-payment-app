@@ -54,7 +54,7 @@ public class User {
 		
 		// BigDecimal Object with the default value of zero
 		// used to set the account initial balance
-		BigDecimal money = new BigDecimal("0");
+		BigDecimal startBalance = new BigDecimal("0");
 		
 		
 		// Try with resources block to create a User
@@ -76,7 +76,7 @@ public class User {
     			if (emailExists(email) == false){
     		    			
 	    			// Overrides the user data with the provided data
-	    			user = new User(SSN, fName, email, money, password);
+	    			user = new User(SSN, fName, email, startBalance, password);
 	    			
 		    		// Start the transaction
 		    		em.getTransaction().begin();
@@ -204,8 +204,8 @@ public class User {
 		
 	}
 	
-	// Money Transference method	
-	public String transferMoney(int SSN, String password, int receiverSSN, BigDecimal transferAmount) {
+	// Transfer money when the receiver is another User	
+	public String transferMoneyToAnotherUser(int SSN, String password, int receiverSSN, BigDecimal transferAmount) {
 		
 		// instantiating User object with a null value
 		User user;
@@ -259,6 +259,86 @@ public class User {
 		
 		return "Error";
 	}
+	
+	// Transfer money when the receiver is a Store
+	public String transferMoneyToStore(int SSN, String password, int receiverEIN, BigDecimal transferAmount) {
+		
+		// instantiating User object with a null value
+		User user;
+		
+		// instantiating the Store object with a null value
+		Store receiver;
+		
+		// Try with resources block to transfer the amount
+		try (
+	    	EntityManagerFactory emf = Persistence.createEntityManagerFactory("PostgresPU");
+	    	EntityManager em = emf.createEntityManager();
+	    	) {
+			
+			// Search the DB for the specified SSN
+			user = em.find(User.class, SSN);
+			
+			// Check if the balance is greater or equal to the transferAmount
+			if (user.getBalance().compareTo(transferAmount) >= 0) {
+				
+				// Search the DB for the receiver SSN only if the balance is sufficient
+				receiver = em.find(Store.class, receiverEIN);
+				
+			} else {
+				return "Insufficient Balance";
+			}
+			
+			// Check if the user exists
+			if (user != null && receiver != null ) {
+							
+				// Start the transaction
+	    		em.getTransaction().begin();
+				
+	    		// Updates the user and store balance
+	    		user.setBalance(user.getBalance().subtract(transferAmount));
+	    		receiver.setBalance(receiver.getBalance().add(transferAmount));
+				
+				// Commit the transaction
+	    		em.getTransaction().commit();
+	    		
+			} else {
+				
+				// return if store does not exists
+				return "Could not found the destiny EIN";
+			}
+			
+			// return if successful
+			String confirmation = transferAmount + "$ Transferred to EIN = " + receiverEIN;;
+			return confirmation;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return "Error";
+	}
+	
+	public boolean emailExists(String email) {
+		
+		// Try with resources block to check if email exists in db
+		try (
+	    	EntityManagerFactory emf = Persistence.createEntityManagerFactory("PostgresPU");
+	    	EntityManager em = emf.createEntityManager();
+	    	) {
+			
+			// if the email exists this will execute and return the email else will throw an exception
+			em.createQuery("SELECT u.email FROM User u WHERE u.email = :email").setParameter("email", email).getSingleResult();
+			
+			// return true if the query is successful
+			return true;
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		// return false if the try with resources fails
+		return false;
+	}
 
 	//Getters and Setters
 	
@@ -288,27 +368,7 @@ public class User {
 		this.balance = balance;
 	}
 	
-	public boolean emailExists(String email) {
-		
-		// Try with resources block to check if email exists in db
-		try (
-	    	EntityManagerFactory emf = Persistence.createEntityManagerFactory("PostgresPU");
-	    	EntityManager em = emf.createEntityManager();
-	    	) {
-			
-			// if the email exists this will execute and return the email else will throw an exception
-			em.createQuery("SELECT u.email FROM User u WHERE u.email = :email").setParameter("email", email).getSingleResult();
-			
-			// return true if the query is successful
-			return true;
-			
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-		
-		// return false if the try with resources fails
-		return false;
-	}
+	
 	
 	@Override
 	public String toString() {

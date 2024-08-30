@@ -20,23 +20,35 @@ public class UserTest {
 	int SSN = 111222333;
 	int failSSN = 999999999;
 	int receiverSSN = 333222111;
+	int EIN = 227777777;
+	int failEIN = 772222222;
+	int receiverEIN = 338888888;
 	String email = "Foo@mail.com";
 	String password = "FooPassword";
+	BigDecimal depositMoney = new BigDecimal("200");
 	BigDecimal money = new BigDecimal("100");
 	BigDecimal largeAmount = new BigDecimal("999999999999");
 	
 	@BeforeAll
 	public static void createTheTransferenceReceiver() {
 		
+		// Creates receiver test User and Store
 		User user = new User();		
 		user.createUser(333222111, "Receiver", "Receiver@mail.com", "ReceiverPassword");
+		
+		Store store = new Store();
+		store.createStore(338888888, "Receiver Store", "ReceiverStore@mail.com", "ReceiverStorePass");
 	}
 	
 	@AfterAll
 	public static void deleteTheTransferenceReceiver() {
 		
+		// Deletes receiver test User and Store
 		User user = new User();	
 		user.deleteUser(333222111, "ReceiverPassword");
+		
+		Store store = new Store();
+		store.deleteStore(338888888, "ReceiverStorePass");
 	}
 	
 	@BeforeEach
@@ -112,46 +124,82 @@ public class UserTest {
 	@Order(7)
 	public void depositMoney_SuccessfullyDeposit_Test() {
 		
-		String expected = money + "$ was deposited successfully";
+		String expected = depositMoney + "$ was deposited successfully";
 		
-		String actual = user.depositMoney(SSN, money);
+		String actual = user.depositMoney(SSN, depositMoney);
 		
 		Assertions.assertEquals(expected, actual);
 	}
 	
+	// To another user transfer tests
 	@Test
 	@Order(8)
-	public void transferMoney_ToAnotherUser_WrongSSN_Test() {
+	public void transferMoneyToAnotherUser_WrongSSN_Test() {
 		
 		String expected = "Could not found the destiny SSN";
 		
-		String actual = user.transferMoney(SSN, password, failSSN, money);
+		String actual = user.transferMoneyToAnotherUser(SSN, password, failSSN, money);
 		
 		Assertions.assertEquals(expected, actual);
 	}
 	
 	@Test
 	@Order(9)
-	public void transferMoney_InsufficientBalance_Test() {
+	public void transferMoneyToAnotherUser_InsufficientBalance_Test() {
 		
 		String expected = "Insufficient Balance";
 		
-		String actual = user.transferMoney(SSN, password, receiverSSN, largeAmount);
+		String actual = user.transferMoneyToAnotherUser(SSN, password, receiverSSN, largeAmount);
 		
 		Assertions.assertEquals(expected, actual);
 	}
 	
 	@Test
 	@Order(10)
-	public void transferMoney_ToAnotherUser_Success_Test() {
+	public void transferMoneyToAnotherUser_Success_Test() {
 		
 		String expected = money + "$ Transferred to SSN = " + receiverSSN;
 		
-		String actual = user.transferMoney(SSN, password, receiverSSN, money);
+		String actual = user.transferMoneyToAnotherUser(SSN, password, receiverSSN, money);
 		
 		Assertions.assertEquals(expected, actual);
 	}
 	
+	// To Store transfer tests
+	@Test
+	@Order(11)
+	public void transferToMoney_WrongEIN_Test() {
+		
+		String expected = "Could not found the destiny EIN";
+		
+		String actual = user.transferMoneyToStore(SSN, password, failEIN, money);
+		
+		Assertions.assertEquals(expected, actual);
+	}
+	
+	@Test
+	@Order(12)
+	public void transferMoneyToStore_InsufficientBalance_Test() {
+		
+		String expected = "Insufficient Balance";
+		
+		String actual = user.transferMoneyToStore(SSN, password, receiverEIN, largeAmount);
+		
+		Assertions.assertEquals(expected, actual);
+	}
+	
+	@Test
+	@Order(13)
+	public void transferMoneyToStore_Success_Test() {
+		
+		String expected = money + "$ Transferred to EIN = " + receiverEIN;
+		
+		String actual = user.transferMoneyToStore(SSN, password, receiverEIN, money);
+		
+		Assertions.assertEquals(expected, actual);
+	}
+	
+	// user delete tests
 	@Test
 	@Order(97)
 	public void deleteUser_WrongSSN_Test() {
@@ -176,7 +224,7 @@ public class UserTest {
 	
 	@Test
 	@Order(99)
-	public void deleteUser_Test() {
+	public void deleteUser_Successfully_Test() {
 		
 		String expected = "User deleted";
 
