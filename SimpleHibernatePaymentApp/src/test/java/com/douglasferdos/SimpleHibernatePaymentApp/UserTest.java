@@ -20,6 +20,7 @@ public class UserTest {
 	int SSN = 111222333;
 	int failSSN = 999999999;
 	int receiverSSN = 333222111;
+	String email = "Foo@mail.com";
 	String password = "FooPassword";
 	BigDecimal money = new BigDecimal("100");
 	BigDecimal largeAmount = new BigDecimal("999999999999");
@@ -47,22 +48,51 @@ public class UserTest {
 	
 	@Test
 	@Order(1)
+	public void emailExists_True_Test() {
+		
+		boolean test = user.emailExists("Receiver@mail.com");
+		
+		Assertions.assertTrue(test);
+	}
+	
+	@Test
+	@Order(1)
+	public void emailExists_False_Test() {
+		
+		boolean test = user.emailExists("emailThatWillNotExistInDB@mail.com");
+		
+		Assertions.assertFalse(test);
+	}
+	
+	@Test
+	@Order(1)
 	public void createUser_SucessfullyCreate_Test() {
 		
 		String expected = "User account sucessfully created";
 	
-		String actual = user.createUser(SSN, "FooBang", "Foo@mail.com", password);
+		String actual = user.createUser(SSN, "FooBang", email, password);
 		
 		Assertions.assertEquals(expected, actual);
 	}
 	
 	@Test
 	@Order(2)
-	public void createUser_AlreadyExists_Test() {
+	public void createUser_SSNAlreadyExists_Test() {
 		
 		String expected = "Specified SSN already has an account";
 
-		String actual = user.createUser(SSN, "FooBang", "Foo@mail.com", password);
+		String actual = user.createUser(SSN, "FooBang", email, password);
+		
+		Assertions.assertEquals(expected, actual);
+	}
+	
+	@Test
+	@Order(2)
+	public void createUser_emailAlreadyExists_Test() {
+		
+		String expected = "Specified email already has an account";
+
+		String actual = user.createUser(failSSN, "FooBang", email, password);
 		
 		Assertions.assertEquals(expected, actual);
 	}

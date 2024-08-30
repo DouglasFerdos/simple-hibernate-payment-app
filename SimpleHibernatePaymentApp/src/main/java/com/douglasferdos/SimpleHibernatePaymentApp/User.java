@@ -69,21 +69,29 @@ public class User {
     		user = em.find(User.class, SSN);
     		
     		// Create a user for the provided data if
-    		// no user with the specified SSN is found  		
-    		if (user == null){
+    		// no user with the specified SSN is found
+    		if (user == null) { 
     			
-    			// Overrides the user data with the provided data
-    			user = new User(SSN, fName, email, money, password);
+        		// if the user does not exists checks 
+        		// for the email in the database
     			
-	    		// Start the transaction
-	    		em.getTransaction().begin();
-	    		
-	    		// Persist the transaction
-	    		em.persist(user);
-	    		
-	    		// Commit the transaction
-	    		em.getTransaction().commit();
+    			if (emailExists(email) == false){
+    		    			
+	    			// Overrides the user data with the provided data
+	    			user = new User(SSN, fName, email, money, password);
+	    			
+		    		// Start the transaction
+		    		em.getTransaction().begin();
+		    		
+		    		// Persist the transaction
+		    		em.persist(user);
+		    		
+		    		// Commit the transaction
+		    		em.getTransaction().commit();
 	
+    			} else {
+    				return "Specified email already has an account";
+    			}
     		} else {
     			
     			// return if failed: account with this SSN already exists
@@ -273,7 +281,6 @@ public class User {
 		return balance;
 	}
 	
-	
 	// private methods for local use only
 	private String getPassword() {
 		return password;
@@ -283,7 +290,29 @@ public class User {
 	private void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
-
+	
+	public boolean emailExists(String email) {
+		
+		// Try with resources block to check if email exists in db
+		try (
+	    	EntityManagerFactory emf = Persistence.createEntityManagerFactory("PostgresPU");
+	    	EntityManager em = emf.createEntityManager();
+	    	) {
+			
+			// if the email exists this will execute and return the email else will throw an exception
+			em.createQuery("SELECT u.email FROM User u WHERE u.email = :email").setParameter("email", email).getSingleResult();
+			
+			// return true if the query is successful
+			return true;
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		// return false if the try with resources fails
+		return false;
+	}
+	
 	@Override
 	public String toString() {
 		return "User [SSN=" + SSN + ", fName=" + fName + ", email=" + email + ", balance=" + balance + ", password="
