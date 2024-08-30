@@ -56,7 +56,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(1)
+	@Order(2)
 	public void emailExists_False_Test() {
 		
 		boolean test = user.emailExists("emailThatWillNotExistInDB@mail.com");
@@ -65,7 +65,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(1)
+	@Order(3)
 	public void createUser_SucessfullyCreate_Test() {
 		
 		String expected = "User account sucessfully created";
@@ -76,7 +76,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(2)
+	@Order(4)
 	public void createUser_SSNAlreadyExists_Test() {
 		
 		String expected = "Specified SSN already has an account";
@@ -87,7 +87,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(2)
+	@Order(5)
 	public void createUser_emailAlreadyExists_Test() {
 		
 		String expected = "Specified email already has an account";
@@ -98,7 +98,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(3)
+	@Order(6)
 	public void depositMoney_WrongSSN_Test() {
 		
 		String expected = "Wrong SSN";
@@ -109,7 +109,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(4)
+	@Order(7)
 	public void depositMoney_SuccessfullyDeposit_Test() {
 		
 		String expected = money + "$ was deposited successfully";
@@ -120,7 +120,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(5)
+	@Order(8)
 	public void transferMoney_ToAnotherUser_WrongSSN_Test() {
 		
 		String expected = "Could not found the destiny SSN";
@@ -131,7 +131,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(6)
+	@Order(9)
 	public void transferMoney_InsufficientBalance_Test() {
 		
 		String expected = "Insufficient Balance";
@@ -142,7 +142,7 @@ public class UserTest {
 	}
 	
 	@Test
-	@Order(7)
+	@Order(10)
 	public void transferMoney_ToAnotherUser_Success_Test() {
 		
 		String expected = money + "$ Transferred to SSN = " + receiverSSN;
