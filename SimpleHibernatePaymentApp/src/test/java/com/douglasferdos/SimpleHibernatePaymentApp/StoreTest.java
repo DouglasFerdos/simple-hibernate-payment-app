@@ -57,7 +57,7 @@ public class StoreTest {
 	}
 	
 	@Test
-	@Order(3)
+	@Order(4)
 	public void emailExists_True_Test() {
 		
 		boolean test = store.emailExists(email);
@@ -66,7 +66,7 @@ public class StoreTest {
 	}
 	
 	@Test
-	@Order(4)
+	@Order(5)
 	public void emailExists_False_Test() {
 		
 		boolean test = store.emailExists("emailThatWillNotExistInDB@mail.com");
