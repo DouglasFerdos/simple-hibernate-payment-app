@@ -16,7 +16,6 @@ import jakarta.persistence.Table;
 public class User {
 
 	// Table Columns
-	
 	@Id
 	@Column(name = "ssn", nullable = false ,length = 9, columnDefinition = "INT")
 	private int SSN;
@@ -46,7 +45,6 @@ public class User {
 		this.password = password;
 		
 	}
-	
 	
 	// Create a user (Insert a row in Users Table)
 	public String createUser(int SSN, String fName, String email, String password) {
@@ -111,7 +109,6 @@ public class User {
     	// executes if the try with resources block fails
 		return "Error";
 	}
-	
 	
 	public String deleteUser(int SSN, String password) {
 		
