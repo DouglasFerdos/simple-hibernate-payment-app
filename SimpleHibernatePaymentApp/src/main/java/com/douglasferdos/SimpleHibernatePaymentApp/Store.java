@@ -47,7 +47,6 @@ public class Store {
 		
 	}
 	
-	
 	// Create a Store (Insert a row in Stores Table)
 	public String createStore(int EIN, String fName, String email, String password) {
 		
@@ -173,9 +172,7 @@ public class Store {
 			// return true if the query is successful
 			return true;
 			
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		} catch(Exception e) {}
 		
 		// return false if the try with resources fails
 		return false;

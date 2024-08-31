@@ -332,9 +332,7 @@ public class User {
 			// return true if the query is successful
 			return true;
 			
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
+		} catch(Exception e) {}
 		
 		// return false if the try with resources fails
 		return false;
