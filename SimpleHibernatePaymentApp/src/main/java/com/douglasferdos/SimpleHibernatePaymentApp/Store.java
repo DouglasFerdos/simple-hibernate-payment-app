@@ -29,21 +29,24 @@ public class Store {
 	@Column(name = "balance")
 	private BigDecimal balance;
 	
-	@Column(name = "password", nullable = false, length = 64, columnDefinition = "TEXT")
-	private String password;
+	@Column(name = "passwordHash", nullable = false, length = 64, columnDefinition = "TEXT")
+	private String passwordHash;
 	
+	@Column(name = "passwordSalt", nullable = false, length = 64, columnDefinition = "TEXT")
+	private String passwordSalt;
 	
 	// Empty constructor to Hibernate create when fetching data from DB
 	public Store() {}
 	
 	// Auxiliary constructor with parameters for Store
-	public Store(int EIN, String fName, String email, BigDecimal balance, String password) {
+	public Store(int EIN, String fName, String email, BigDecimal balance, String passwordHash, String passwordSalt) {
 		
 		this.EIN = EIN;
 		this.fName = fName;
 		this.email = email;
 		this.balance = balance;
-		this.password = password;
+		this.passwordHash = passwordHash;
+		this.passwordSalt = passwordSalt;
 		
 	}
 	
@@ -75,8 +78,12 @@ public class Store {
         		// for the email in the database
     			if (emailExists(email) == false){
     		    			
+    				// hashing the Store password
+    				PasswordHashing PHash = new PasswordHashing();
+    				String[] passwordHashAndSalt = PHash.passwordHashing(password);
+    				
 	    			// Overrides the store data with the provided data
-	    			store = new Store(EIN, fName, email, startBalance, password);
+	    			store = new Store(EIN, fName, email, startBalance, passwordHashAndSalt[0], passwordHashAndSalt[1]);
 	    			
 		    		// Start the transaction
 		    		em.getTransaction().begin();
@@ -88,11 +95,14 @@ public class Store {
 		    		em.getTransaction().commit();
 	
     			} else {
+    				
+    				// return if email already exists for other EIN
     				return "Specified email already has an account";
     			}
+    			
     		} else {
     			
-    			// return if failed: account with this EIN already exists
+    			// return if specified EIN already exists
     			return "Specified EIN already has an account";
     		}
     		
@@ -127,23 +137,34 @@ public class Store {
 			
 			// Check if not null first, else the get methods will fail
 			// Delete the store if the EIN has been found
-			if (store != null && store.getEIN() == EIN && store.getPassword().equals(password)) {
+			if (store != null) {
 				
-				// Start the transaction
-	    		em.getTransaction().begin();
-	    		
-	    		// Delete the store
-	    		em.remove(store);
-	    		
-	    		// Commit the transaction
-	    		em.getTransaction().commit();
-	    		
-			} else {
-    			
-    			// return if failed
-    			return "EIN or Password incorrect";
-    		}
+				// Checking if the provided password is equal to the stored one
+				PasswordHashing PHash = new PasswordHashing();
+				boolean passCheck = PHash.passwordCheck(password, store.getPasswordHash(), store.getPasswordSalt());
 			
+				// Delete the user if the password is correct
+				if (passCheck) {
+				
+					// Start the transaction
+		    		em.getTransaction().begin();
+		    		
+		    		// Delete the store account
+		    		em.remove(store);
+		    		
+		    		// Commit the transaction
+		    		em.getTransaction().commit();
+		    		
+				} else {
+	    			
+					// return if password is wrong
+	    			return "EIN or Password incorrect";
+	    		}
+			} else {
+				
+				// return if EIN is wrong
+				return "EIN or Password incorrect";
+			}
 			// return if successful
 			return "Store deleted";
 			
@@ -158,7 +179,7 @@ public class Store {
 		return "Error";
 	}
 
-	public boolean emailExists(String email) {
+	protected boolean emailExists(String email) {
 		
 		// Try with resources block to check if email exists in db
 		try (
@@ -196,11 +217,16 @@ public class Store {
 		return balance;
 	}
 
-	public String getPassword() {
-		return password;
+	private String getPasswordHash() {
+		return passwordHash;
 	}
 
-	public void setBalance(BigDecimal balance) {
+	private String getPasswordSalt() {
+		return passwordSalt;
+	}
+	
+	// setter for User.transferMoneyToStore() method use
+	protected void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
 

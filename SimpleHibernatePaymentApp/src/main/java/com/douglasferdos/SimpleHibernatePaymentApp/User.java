@@ -76,7 +76,6 @@ public class User {
     			
         		// if the user does not exists checks 
         		// for the email in the database
-    			
     			if (emailExists(email) == false){
     		    	
     				// hashing the User password
@@ -96,11 +95,12 @@ public class User {
 		    		em.getTransaction().commit();
 	
     			} else {
+    				
     				return "Specified email already has an account";
     			}
     		} else {
     			
-    			// return if failed: account with this SSN already exists
+    			// return if account with this SSN already exists
     			return "Specified SSN already has an account";
     		}
     		
@@ -368,7 +368,7 @@ public class User {
 		return "Error";
 	}
 	
-	public boolean emailExists(String email) {
+	protected boolean emailExists(String email) {
 		
 		// Try with resources block to check if email exists in db
 		try (
@@ -390,12 +390,12 @@ public class User {
 
 	//Getters and Setters
 	
-	public String getFullName() {
-		return fName;
-	}
-
 	public int getSSN() {
 		return SSN;
+	}
+	
+	public String getfName() {
+		return fName;
 	}
 
 	public String getEmail() {
@@ -415,7 +415,7 @@ public class User {
 		return passwordSalt;
 	}
 	
-	// setter for depositMoney use
+	// setter for depositMoney and transfer use
 	private void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
