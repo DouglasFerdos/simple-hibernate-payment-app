@@ -27,7 +27,7 @@ public class PasswordHashing {
 	}
 	
 	// Creates the password
-	protected Object[] passwordHashing(String password){
+	protected String[] passwordHashing(String password){
 		
 		// Use the generateSalt16Byte method to generate a salt
 		byte[] salt = generateSalt16Byte();
@@ -87,23 +87,25 @@ public class PasswordHashing {
 	    // Hashing the password
 	    generator.generateBytes(password.getBytes(StandardCharsets.UTF_8), result);
 	    
-	    // Get the string from the hash to store in the database 
+	    // Getting the string from the hash and salt to store in the database
+	    // with java officially supported API for Base64
 	    String hashedPassword = Base64.getEncoder().encodeToString(result);
-	    
+	    String saltStr = Base64.getEncoder().encodeToString(salt);
 	    // create the Object with the info to store in the database
-	    Object[] hashedPasswordandSalt = new Object[2]; 
-	    
-
+	    String[] hashedPasswordandSalt = new String[2]; 
 	    
 	    hashedPasswordandSalt[0] = hashedPassword;
-	    hashedPasswordandSalt[1] = salt;
+	    hashedPasswordandSalt[1] = saltStr;
 	    
 	    // return the Object
 	    return hashedPasswordandSalt;
 	}
 	
 	// check if the input password is correct
-	protected boolean passwordCheck(String passwordToCheck, String storedHash, byte[] salt) {
+	protected boolean passwordCheck(String passwordToCheck, String storedHash, String saltStr) {
+		
+		// decoding salt String back to byte[] with java officially supported API for Base64 
+		byte[] salt = Base64.getDecoder().decode(saltStr);
 		
 		// Pepper will add to the strength of the password hash
 		// if the database get compromised but the application does not

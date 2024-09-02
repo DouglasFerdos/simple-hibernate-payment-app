@@ -14,11 +14,11 @@ public class PasswordHashingTest {
 		
 		String password = "StrongPasswordHerePlease123!@#";
 		
-		Object[] PassHashAndSalt = PHash.passwordHashing(password);
+		String[] PassHashAndSalt = PHash.passwordHashing(password);
 		
-		String passHash = (String) PassHashAndSalt[0];
+		String passHash = PassHashAndSalt[0];
 		
-		byte[] salt = (byte[]) PassHashAndSalt[1];
+		String salt = PassHashAndSalt[1];
 		
 		boolean actual = PHash.passwordCheck(password, passHash, salt);
 		

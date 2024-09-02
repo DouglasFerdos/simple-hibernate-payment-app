@@ -370,8 +370,7 @@ public class User {
 	
 	@Override
 	public String toString() {
-		return "User [SSN=" + SSN + ", fName=" + fName + ", email=" + email + ", balance=" + balance + ", password="
-				+ password + "]";
+		return "User [SSN=" + SSN + ", fName=" + fName + ", email=" + email + ", balance=" + balance + "]";
 	}
 		
 }
