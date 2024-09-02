@@ -30,19 +30,23 @@ public class User {
 	private BigDecimal balance;
 	
 	@Column(name = "passwordHash", nullable = false, length = 64, columnDefinition = "TEXT")
-	private String password;
+	private String passwordHash;
+	
+	@Column(name = "passwordSalt", nullable = false, length = 64, columnDefinition = "TEXT")
+	private String passwordSalt;
 	
 	// Empty constructor to Hibernate create when fetching data from DB
 	public User() {}
 	
 	// Auxiliary constructor with parameters for User
-	public User(int SSN, String fName, String email, BigDecimal balance, String password) {
+	public User(int SSN, String fName, String email, BigDecimal balance, String passwordHash, String passwordSalt) {
 		
 		this.SSN = SSN;
 		this.fName = fName;
 		this.email = email;
 		this.balance = balance;
-		this.password = password;
+		this.passwordHash = passwordHash;
+		this.passwordSalt = passwordSalt;
 		
 	}
 	
@@ -74,9 +78,13 @@ public class User {
         		// for the email in the database
     			
     			if (emailExists(email) == false){
-    		    			
+    		    	
+    				// hashing the User password
+    				PasswordHashing PHash = new PasswordHashing();
+    				String[] passwordHashAndSalt = PHash.passwordHashing(password);
+    				
 	    			// Overrides the user data with the provided data
-	    			user = new User(SSN, fName, email, startBalance, password);
+	    			user = new User(SSN, fName, email, startBalance, passwordHashAndSalt[0], passwordHashAndSalt[1]);
 	    			
 		    		// Start the transaction
 		    		em.getTransaction().begin();
@@ -124,25 +132,34 @@ public class User {
 			// Search the DB for the specified SSN 
 			user = em.find(User.class, SSN);
 			
-			// Check if not null first, else the get methods will fail
-			// Delete the user if the SSN has been found
-			if (user != null && user.getSSN() == SSN && user.getPassword().equals(password)) {
+			if (user != null) {
+				// Checking if the password is equal to the stored one
+				PasswordHashing PHash = new PasswordHashing();
+				boolean passCheck = PHash.passwordCheck(password, user.getPasswordHash(), user.getPasswordSalt());
+			
+				// Delete the user if the password is correct
+				if (passCheck) {
+					
+					// Start the transaction
+		    		em.getTransaction().begin();
+		    		
+		    		// Delete the user
+		    		em.remove(user);
+		    		
+		    		// Commit the transaction
+		    		em.getTransaction().commit();
+		    		
+				} else {
+	    			
+	    			// return if password is wrong
+	    			return "SSN or Password incorrect";
+	    		}
 				
-				// Start the transaction
-	    		em.getTransaction().begin();
-	    		
-	    		// Delete the user
-	    		em.remove(user);
-	    		
-	    		// Commit the transaction
-	    		em.getTransaction().commit();
-	    		
 			} else {
     			
-    			// return if failed
+    			// return if SSN is wrong
     			return "SSN or Password incorrect";
     		}
-			
 			// return if successful
 			return "User deleted";
 			
@@ -220,14 +237,31 @@ public class User {
 			// Search the DB for the specified SSN
 			user = em.find(User.class, SSN);
 			
-			// Check if the balance is greater or equal to the transferAmount
-			if (user.getBalance().compareTo(transferAmount) >= 0) {
+			if (user != null) {
+				// Checking if the password is equal to the stored one
+				PasswordHashing PHash = new PasswordHashing();
+				boolean passCheck = PHash.passwordCheck(password, user.getPasswordHash(), user.getPasswordSalt());
+			
+				if (passCheck) {
+					
+					// Check if the balance is greater or equal to the transferAmount
+					if (user.getBalance().compareTo(transferAmount) >= 0) {
+					// Search the DB for the receiver SSN only if the balance is sufficient
+					receiver = em.find(User.class, receiverSSN);
+					
+					} else {
+						// if the account balance is less than the transfer amount
+						return "Insufficient Balance";
+					}
 				
-				// Search the DB for the receiver SSN only if the balance is sufficient
-				receiver = em.find(User.class, receiverSSN);
+				} else {
+					// if the password is incorrect
+					return "SSN or Password incorrect";
+				}
 				
 			} else {
-				return "Insufficient Balance";
+				// if the SSN is incorrect
+				return "SSN or Password incorrect";
 			}
 			
 			// Check if the user exists
@@ -246,7 +280,7 @@ public class User {
 			} else {
 				
 				// return if user does not exists
-				return "Could not found the destiny SSN";
+				return "Could not find the destiny SSN";
 			}
 			
 			// return if successful
@@ -278,16 +312,32 @@ public class User {
 			// Search the DB for the specified SSN
 			user = em.find(User.class, SSN);
 			
-			// Check if the balance is greater or equal to the transferAmount
-			if (user.getBalance().compareTo(transferAmount) >= 0) {
-				
-				// Search the DB for the receiver SSN only if the balance is sufficient
-				receiver = em.find(Store.class, receiverEIN);
+			if (user != null) {
+				// Checking if the password is equal to the stored one
+				PasswordHashing PHash = new PasswordHashing();
+				boolean passCheck = PHash.passwordCheck(password, user.getPasswordHash(), user.getPasswordSalt());
+			
+				if (passCheck) {
+					
+					// Check if the balance is greater or equal to the transferAmount
+					if (user.getBalance().compareTo(transferAmount) >= 0) {
+						// Search the DB for the receiver SSN only if the balance is sufficient
+						receiver = em.find(Store.class, receiverEIN);
+					} else {
+						// if the account balance is less than the transfer amount
+						return "Insufficient Balance";
+					}
+					
+				} else {
+					// if the password is incorrect
+					return "SSN or Password incorrect";
+				}
 				
 			} else {
-				return "Insufficient Balance";
+				// if the SSN is incorrect
+				return "SSN or Password incorrect";
 			}
-			
+
 			// Check if the user exists
 			if (user != null && receiver != null ) {
 							
@@ -304,7 +354,7 @@ public class User {
 			} else {
 				
 				// return if store does not exists
-				return "Could not found the destiny EIN";
+				return "Could not find the destiny EIN";
 			}
 			
 			// return if successful
@@ -357,16 +407,18 @@ public class User {
 	}
 	
 	// private methods for local use only
-	private String getPassword() {
-		return password;
+	private String getPasswordHash() {
+		return passwordHash;
+	}
+	
+	private String getPasswordSalt() {
+		return passwordSalt;
 	}
 	
 	// setter for depositMoney use
 	private void setBalance(BigDecimal balance) {
 		this.balance = balance;
 	}
-	
-	
 	
 	@Override
 	public String toString() {

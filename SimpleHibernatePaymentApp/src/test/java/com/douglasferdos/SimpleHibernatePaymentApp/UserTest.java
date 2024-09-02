@@ -136,7 +136,7 @@ public class UserTest {
 	@Order(8)
 	public void transferMoneyToAnotherUser_WrongSSN_Test() {
 		
-		String expected = "Could not found the destiny SSN";
+		String expected = "Could not find the destiny SSN";
 		
 		String actual = user.transferMoneyToAnotherUser(SSN, password, failSSN, money);
 		
@@ -170,7 +170,7 @@ public class UserTest {
 	@Order(11)
 	public void transferToMoney_WrongEIN_Test() {
 		
-		String expected = "Could not found the destiny EIN";
+		String expected = "Could not find the destiny EIN";
 		
 		String actual = user.transferMoneyToStore(SSN, password, failEIN, money);
 		
